@@ -18,7 +18,7 @@ set(HEADER_FILES
     sudoku_test_data.h
     sv_guessescache.h
     sv_sfield.h
-    types.h
+    sv_types.h
     timemeasurer.h
 )
 
