@@ -69,7 +69,7 @@ struct TestingLogic
 
    void MeasuramentLogic()
    {
-      std::cout << "Measurement logic for " << TestName.value << "\n";
+      std::cout << "Measurement logic for:   -->   \"" << TestName.value << "\"   <---\n";
       std::cout << "Heat up call" << "\n";
       HeatUpCall();
       CoutDone();

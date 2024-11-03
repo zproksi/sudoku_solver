@@ -7,6 +7,8 @@ set(SOURCE_FILES
     stdafx.cpp
     simple_solver.cpp
     sudoku_test_data.cpp
+    sv_guessescache.cpp
+    sv_sfield.cpp
     timemeasurer.cpp
 )
 set(HEADER_FILES
@@ -14,6 +16,9 @@ set(HEADER_FILES
     stdafx.h
     simple_solver.h
     sudoku_test_data.h
+    sv_guessescache.h
+    sv_sfield.h
+    types.h
     timemeasurer.h
 )
 
