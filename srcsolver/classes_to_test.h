@@ -69,7 +69,7 @@ struct TestingLogic
 
    void MeasuramentLogic()
    {
-      std::cout << "Measurement logic for " << TestName.value << "\n";
+      std::cout << "Measurement logic for:   -->   \"" << TestName.value << "\"   <---\n";
       std::cout << "Heat up call" << "\n";
       HeatUpCall();
       CoutDone();
@@ -93,8 +93,8 @@ struct TestingLogic
             }
             nanosecondsForRun = tmLocal.NanosecondsElapsed(std::chrono::high_resolution_clock::now());
          }
-         std::cout << RUNS_AMOUNT << " took " << nanosecondsForRun << " nanoseconds\n";
-         std::cout << nanosecondsForRun / RUNS_AMOUNT + 1 << " nanoseconds for " << sudoku_test_data::nSudokuToSolve << " sudoku in average\n\n";
+         std::cout << RUNS_AMOUNT << " took " << TimeMeasurer::FormatNanoseconds(nanosecondsForRun) << " nanoseconds\n";
+         std::cout << TimeMeasurer::FormatNanoseconds(nanosecondsForRun / RUNS_AMOUNT + 1) << " nanoseconds for " << sudoku_test_data::nSudokuToSolve << " sudoku in average\n\n";
       }
       CoutDone();
    }
