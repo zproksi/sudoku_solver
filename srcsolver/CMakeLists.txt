@@ -12,6 +12,7 @@ set(SOURCE_FILES
     timemeasurer.cpp
 )
 set(HEADER_FILES
+    bs_onethread.h
     classes_to_test.h
     stdafx.h
     simple_solver.h
