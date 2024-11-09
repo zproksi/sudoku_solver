@@ -3,6 +3,7 @@
 #include "sv_guessescache.h"
 #include "sv_sfield.h"
 #include "bs_onethread.h"
+#include "brute_force.h"
 
 
 /// <summary>
@@ -90,7 +91,7 @@ public:
 
 
 /// <summary>
-///  Very first option - simple solving solution. No speed optimisations
+///  Branchless Logic - speed optimisations
 /// </summary>
 /// 
 
@@ -114,6 +115,30 @@ public:
 
 /// -------------------------------------------------------
 
+/// <summary>
+///  Brute force logic. Simple Enumeration
+/// </summary>
+/// 
+
+class EnumerationSolveLogic final : public TestingLogic<EnumerationSolveLogic, "Brute force logic. Enumeration">
+{
+public:
+   void InitializationLogic()
+   {
+   }
+
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      brute_force::solve_sudoku(toSolve, toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
+
+
+/// -------------------------------------------------------
 
 //int main(int argc, char* argv[])
 int main()
@@ -139,6 +164,14 @@ int main()
     }
     {
        BranchlessSolveLogic es;
+       es.Initialize();
+       es.HeatUpCall();
+       es.MeasuramentLogic();
+       es.Deinitialize();
+       std::cout << std::endl << std::endl << std::endl;
+    }
+    {
+       EnumerationSolveLogic es;
        es.Initialize();
        es.HeatUpCall();
        es.MeasuramentLogic();
