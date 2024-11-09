@@ -2,6 +2,7 @@
 #include "classes_to_test.h"
 #include "sv_guessescache.h"
 #include "sv_sfield.h"
+#include "bs_onethread.h"
 
 
 /// <summary>
@@ -88,6 +89,32 @@ public:
 /// -------------------------------------------------------
 
 
+/// <summary>
+///  Very first option - simple solving solution. No speed optimisations
+/// </summary>
+/// 
+
+class BranchlessSolveLogic final : public TestingLogic<BranchlessSolveLogic, "Branchless Logic Solution">
+{
+public:
+   void InitializationLogic()
+   {
+   }
+
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      bs::SolveSudoku(toSolve, toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
+
+
+/// -------------------------------------------------------
+
+
 //int main(int argc, char* argv[])
 int main()
 {
@@ -104,6 +131,14 @@ int main()
     }
     {
        SimpleSolveLogic es;
+       es.Initialize();
+       es.HeatUpCall();
+       es.MeasuramentLogic();
+       es.Deinitialize();
+       std::cout << std::endl << std::endl << std::endl;
+    }
+    {
+       BranchlessSolveLogic es;
        es.Initialize();
        es.HeatUpCall();
        es.MeasuramentLogic();

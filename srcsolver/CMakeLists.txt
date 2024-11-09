@@ -5,16 +5,15 @@ set(pname solver)
 set(SOURCE_FILES
     solver.cpp
     stdafx.cpp
-    simple_solver.cpp
     sudoku_test_data.cpp
     sv_guessescache.cpp
     sv_sfield.cpp
     timemeasurer.cpp
 )
 set(HEADER_FILES
+    bs_onethread.h
     classes_to_test.h
     stdafx.h
-    simple_solver.h
     sudoku_test_data.h
     sv_guessescache.h
     sv_sfield.h
