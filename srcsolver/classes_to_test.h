@@ -63,6 +63,7 @@ struct TestingLogic
       T* const pT = static_cast<T*>(this);
       for (size_t i = 0; i < sudoku_test_data::nSudokuToSolve; ++i)
       {
+         memset(to_hold_solutions[i], 'Q', sizeof(to_hold_solutions[i]));  // to ensure - solved here
          pT->SolveSudoku(sudoku_test_data::SudokuToSolve(i), to_hold_solutions[i]);
       }
    }

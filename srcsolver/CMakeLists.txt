@@ -14,6 +14,7 @@ set(HEADER_FILES
     brute_force.h
     bs_onethread.h
     classes_to_test.h
+    multithreaded_solve.h
     stdafx.h
     sudoku_test_data.h
     sv_guessescache.h

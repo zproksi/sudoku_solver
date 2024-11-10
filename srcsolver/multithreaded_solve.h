@@ -4,8 +4,10 @@
 #include <utility>
 #include <cstddef>
 #include <type_traits>
+#include <thread>
+#include <atomic>
 
-namespace bs
+namespace bs_multithreaded
 {
 
 /// working with indexes only :
@@ -20,16 +22,15 @@ struct SCELL final
    char value = NOTFOUND;
    char options[N_OPTIONS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-
    /// <summary>
    ///   set option value to value or NOTFOUND
    /// </summary>
    /// <param name="c">to set This Index at this index if v is Equal to this index</param>
    /// <param name="v">to set this index if this index came inside</param>
-   constexpr void inline OptionValue(const bool bValid, const char c, const char v) noexcept
+   constexpr void inline OptionValue(const char c, const char v) noexcept
    {
       const bool b = c == v;
-      options[c] = options[c] * (!bValid) + bValid * (NOTFOUND * (!b) + v * (b));
+      options[c] = b * c + NOTFOUND * (!b);
    }
 
    /// only this method acceps characters
@@ -38,28 +39,18 @@ struct SCELL final
    {
       const bool b = c >= '1' && c <='9';
       value = b * (c - '1') + (!b) * NOTFOUND;
-
-      OptionValue(b, 0, value); OptionValue(b, 1, value); OptionValue(b, 2, value);
-      OptionValue(b, 3, value); OptionValue(b, 4, value); OptionValue(b, 5, value);
-      OptionValue(b, 6, value); OptionValue(b, 7, value); OptionValue(b, 8, value);
-//      options[8] = options[8] * (!b) + b * (NOTFOUND * (8 != value) + value * (value == 8));
-
+      OptionValue(0, value); OptionValue(1, value); OptionValue(2, value);
+      OptionValue(3, value); OptionValue(4, value); OptionValue(5, value);
+      OptionValue(6, value); OptionValue(7, value); OptionValue(8, value);
       return b;
-   }
-
-   /// set NOTFOUND of established value for index c
-   constexpr void inline DetectOptionToSet(const char c, const char v) noexcept
-   {
-      const bool b = c == v;
-      options[c] = NOTFOUND * (!b) + v * (b);
    }
 
    /// set cell value to this character without any check
    constexpr void inline SetCellTo(const char v) noexcept
    {
-      DetectOptionToSet(0, v); DetectOptionToSet(1, v); DetectOptionToSet(2, v);
-      DetectOptionToSet(3, v); DetectOptionToSet(4, v); DetectOptionToSet(5, v);
-      DetectOptionToSet(6, v); DetectOptionToSet(7, v); DetectOptionToSet(8, v);
+      OptionValue(0, v); OptionValue(1, v); OptionValue(2, v);
+      OptionValue(3, v); OptionValue(4, v); OptionValue(5, v);
+      OptionValue(6, v); OptionValue(7, v); OptionValue(8, v);
       value = v;
    }
 
@@ -352,26 +343,25 @@ struct SFIELD final
    bool CheckIndexesArray(const size_t indexes[N_OPTIONS]) noexcept
    {
       // how many options for this index in line exists
-      size_t amounts[N_OPTIONS] = {0,0,0,0,0,0,0,0,0}; // how many met  of 0,1,2,..     9+ if this index found
-      size_t indexAt[N_OPTIONS] = {N_CELLS, N_CELLS, N_CELLS, N_CELLS, N_CELLS, N_CELLS, N_CELLS, N_CELLS, N_CELLS}; // where we met this option
+      size_t amounts[N_OPTIONS] = {0}; // how many met  of 0,1,2,..     9+ if this index found
+      size_t indexAt[N_OPTIONS];       // where we met this option
 
       for (size_t k = 0; k < N_OPTIONS; ++k)
       {
          const size_t at = indexes[k];
          const SCELL& cell = cells_[at];
          const bool established = cell.value != NOTFOUND;
-         amounts[cell.value % N_OPTIONS] += established * N_OPTIONS; // add 9 if established
+         amounts[at % N_OPTIONS] += established * N_OPTIONS; // add 9 if established
 
-         //                                  set index        only if == 1          and we did not set it before
-         amounts[0] += cell.options[0] == 0; {const bool b = (amounts[0] == 1) * (indexAt[0] == N_CELLS); indexAt[0] = at * b + (!b) * indexAt[0];}
-         amounts[1] += cell.options[1] == 1; {const bool b = (amounts[1] == 1) * (indexAt[1] == N_CELLS); indexAt[1] = at * b + (!b) * indexAt[1];}
-         amounts[2] += cell.options[2] == 2; {const bool b = (amounts[2] == 1) * (indexAt[2] == N_CELLS); indexAt[2] = at * b + (!b) * indexAt[2];}
-         amounts[3] += cell.options[3] == 3; {const bool b = (amounts[3] == 1) * (indexAt[3] == N_CELLS); indexAt[3] = at * b + (!b) * indexAt[3];}
-         amounts[4] += cell.options[4] == 4; {const bool b = (amounts[4] == 1) * (indexAt[4] == N_CELLS); indexAt[4] = at * b + (!b) * indexAt[4];}
-         amounts[5] += cell.options[5] == 5; {const bool b = (amounts[5] == 1) * (indexAt[5] == N_CELLS); indexAt[5] = at * b + (!b) * indexAt[5];}
-         amounts[6] += cell.options[6] == 6; {const bool b = (amounts[6] == 1) * (indexAt[6] == N_CELLS); indexAt[6] = at * b + (!b) * indexAt[6];}
-         amounts[7] += cell.options[7] == 7; {const bool b = (amounts[7] == 1) * (indexAt[7] == N_CELLS); indexAt[7] = at * b + (!b) * indexAt[7];}
-         amounts[8] += cell.options[8] == 8; {const bool b = (amounts[8] == 1) * (indexAt[8] == N_CELLS); indexAt[8] = at * b + (!b) * indexAt[8];}
+         amounts[0] += cell.options[0] == 0; indexAt[0] = at * (amounts[0] == 1);
+         amounts[1] += cell.options[1] == 1; indexAt[1] = at * (amounts[1] == 1);
+         amounts[2] += cell.options[2] == 2; indexAt[2] = at * (amounts[2] == 1);
+         amounts[3] += cell.options[3] == 3; indexAt[3] = at * (amounts[3] == 1);
+         amounts[4] += cell.options[4] == 4; indexAt[4] = at * (amounts[4] == 1);
+         amounts[5] += cell.options[5] == 5; indexAt[5] = at * (amounts[5] == 1);
+         amounts[6] += cell.options[6] == 6; indexAt[6] = at * (amounts[6] == 1);
+         amounts[7] += cell.options[7] == 7; indexAt[7] = at * (amounts[7] == 1);
+         amounts[8] += cell.options[8] == 8; indexAt[8] = at * (amounts[8] == 1);
       }
 
       bool ret = false;
@@ -461,7 +451,7 @@ struct SFIELD final
          }
       }
 
-      const bool solved = (amount_established >= N_CELLS) && Validate();
+      const bool solved = Validate();
       if (solved)
       {
          for (size_t bigIndex = 0; bigIndex < N_CELLS; ++bigIndex)
@@ -513,16 +503,12 @@ struct SFIELD final
    /// </summary>
    bool ValidateIndexesArray(const size_t indexes[N_OPTIONS]) noexcept
    {
-      size_t amounts[N_OPTIONS] = {0,0,0,0,0,0,0,0,0};
-      size_t found[N_OPTIONS] = {0,0,0,0,0,0,0,0,0}; // if we found - set to 1 at this value
+      size_t amounts[N_OPTIONS] = {0};
 
       for (size_t k = 0; k < N_OPTIONS; ++k)
       {
          const size_t at = indexes[k];
          const SCELL& cell = cells_[at];
-         const bool bFound = cell.value != NOTFOUND;
-         found[cell.value % N_OPTIONS] += bFound;
-
          amounts[0] += cell.options[0] != NOTFOUND;
          amounts[1] += cell.options[1] != NOTFOUND;
          amounts[2] += cell.options[2] != NOTFOUND;
@@ -534,14 +520,10 @@ struct SFIELD final
          amounts[8] += cell.options[8] != NOTFOUND;
       }
 
-      return N_OPTIONS * 2 ==
+      return N_OPTIONS == (
          (amounts[0] > 0) + (amounts[1] > 0) + (amounts[2] > 0) +
          (amounts[3] > 0) + (amounts[4] > 0) + (amounts[5] > 0) +
-         (amounts[6] > 0) + (amounts[7] > 0) + (amounts[8] > 0) +
-         (found[0] < 2) + (found[1] < 2) + (found[2] < 2) +
-         (found[3] < 2) + (found[4] < 2) + (found[5] < 2) +
-         (found[6] < 2) + (found[7] < 2) + (found[8] < 2)
-         ;
+         (amounts[6] > 0) + (amounts[7] > 0) + (amounts[8] > 0) );
 
    }
 };

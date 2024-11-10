@@ -70,13 +70,8 @@ public:
       sv::SolveSudoku(srcSudoku, cache, solvedSudoku);
       for (size_t pos = 0; pos < SUDOKU_DATA_LENGTH; ++pos)
       {
-         auto& v = toSolve[pos];
-         if ('1' <= v && v <= '9')
-         {
-            toSetResult[pos] = static_cast<char>('1' + solvedSudoku.cells_[pos].value_);
-         }
+         toSetResult[pos] = static_cast<char>('1' + solvedSudoku.cells_[pos].value_);
       }
-      
 
    }
 
