@@ -4,6 +4,7 @@
 #include "sv_sfield.h"
 #include "bs_onethread.h"
 #include "bs2_onethread.h"
+#include "bs3_onethread.h"
 #include "brute_force.h"
 
 
@@ -127,6 +128,23 @@ public:
 };
 
 
+class BranchlessSolveLogic3 final : public TestingLogic<BranchlessSolveLogic3, "Branchless Logic Solution 3">
+{
+public:
+   void InitializationLogic()
+   {
+   }
+
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      bs3::SolveSudoku(toSolve, toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
+
 /// -------------------------------------------------------
 
 /// <summary>
@@ -160,30 +178,30 @@ int main()
     std::cout << "I am Sudoku solver demo project!" << std::endl;
     std::cout << "I have " << sudoku_test_data::nSudokuToSolve << " sudoku to solve" << std::endl;
 
-    {
-       TestingLogicNothing es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic();
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
-    {
-       SimpleSolveLogic es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic();
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
-    {
-       BranchlessSolveLogic es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic();
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
+    //{
+    //   TestingLogicNothing es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic();
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
+    //{
+    //   SimpleSolveLogic es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic();
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
+    //{
+    //   BranchlessSolveLogic es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic();
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
     {
        BranchlessSolveLogic2 es;
        es.Initialize();
@@ -193,12 +211,20 @@ int main()
        std::cout << std::endl << std::endl << std::endl;
     }
     {
-       EnumerationSolveLogic es;
+       BranchlessSolveLogic3 es;
        es.Initialize();
        es.HeatUpCall();
        es.MeasuramentLogic();
        es.Deinitialize();
        std::cout << std::endl << std::endl << std::endl;
     }
+    //{
+    //   EnumerationSolveLogic es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic();
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
     return EXIT_SUCCESS;
 }
