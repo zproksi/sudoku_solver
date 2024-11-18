@@ -5,10 +5,11 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace bs3
+namespace bs4
 {
 /// to change for compare against bs2
    using COUNTT = size_t;
+   using OTYPE = int16_t; // options type
 //   using COUNTT = int;
 
 
@@ -30,21 +31,62 @@ consteval size_t NoOptionsValue()
    return result;
 }
 
+struct GenerateBitOptions
+{
+   static constexpr OTYPE firstBit = 0x01;
+   static constexpr std::array<OTYPE, N_OPTIONS> generate()
+   {
+      std::array<OTYPE, N_OPTIONS> result{};
+      std::size_t result_index = 0;
+      for (std::size_t i = 0; i < N_OPTIONS; ++i)
+      {
+         result[result_index++] = firstBit << i;
+      }
+      return result;
+   }
+};
+
+constexpr const OTYPE INITIAL_STATE = 0x01FF;
+constexpr const std::array<OTYPE, N_OPTIONS> optionBits = GenerateBitOptions::generate();
+
 //#pragma warning( disable : 4324)
 //struct __declspec(align(16)) SCELL final
 struct SCELL final
 {
    char value = NOTFOUND;
-   char options[N_OPTIONS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+   OTYPE options = INITIAL_STATE;
 
 
    /// set cell value to this character without any check
    void inline SetCellTo(const char v) noexcept
    {
-      *( reinterpret_cast<decltype(NoOptionsValue())*>(options) ) = NoOptionsValue();
-      options[N_OPTIONS - 1] = NOTFOUND;
+      options = optionBits[v];
       value = v;
-      options[v] = v;
+   }
+
+   COUNTT inline OptionsAmount() const noexcept
+   {
+      COUNTT ret = 0;
+      for (auto o : optionBits)
+      {
+         ret += ((o & options) != 0);
+      }
+      return ret;
+   }
+
+   char inline Option() const noexcept
+   {
+      for (char ret = '\0'; ret < N_OPTIONS; ++ret)
+      {
+         if ((optionBits[ret] & options) != 0)
+            return ret;
+      }
+      return '\0';
+   }
+
+   void inline ClearOption(const COUNTT n) noexcept
+   {
+      options &= ~(optionBits[n]);
    }
 
 }; // struct SCELL final
@@ -80,9 +122,9 @@ struct SFIELD final
       const COUNTT basicIndexSquare = (square / 3) * 27 + (square % 3) * 3;
       for(COUNTT k = 0; k < N_OPTIONS; ++k)
       {
-         cells_[row * N_OPTIONS + k].options[v] = NOTFOUND; // row
-         cells_[column + N_OPTIONS * k].options[v] = NOTFOUND; // column
-         cells_[basicIndexSquare + N_OPTIONS * (k / 3) + (k % 3)].options[v] = NOTFOUND; // column
+         cells_[row * N_OPTIONS + k].ClearOption(v); // row
+         cells_[column + N_OPTIONS * k].ClearOption(v); // column
+         cells_[basicIndexSquare + N_OPTIONS * (k / 3) + (k % 3)].ClearOption(v); // column
       }
 
       ++amount_established;
@@ -104,20 +146,14 @@ struct SFIELD final
          if (NOTFOUND != cell.value)
             continue;
 
-         const COUNTT optionsAmount =
-            (cell.options[0] == 0) + (cell.options[1] == 1) + (cell.options[2] == 2) +
-            (cell.options[3] == 3) + (cell.options[4] == 4) + (cell.options[5] == 5) +
-            (cell.options[6] == 6) + (cell.options[7] == 7) + (cell.options[8] == 8);
+         const COUNTT optionsAmount = cell.OptionsAmount();
 
          /// no options and no value
          if (0 == optionsAmount) { return false; }
 
          if (1 == optionsAmount)
          {
-            const COUNTT valueToSet = (cell.options[1] == 1) * 1 + (cell.options[2] == 2) * 2
-               + (cell.options[3] == 3) * 3 + (cell.options[4] == 4) * 4 + (cell.options[5] == 5) * 5
-               + (cell.options[6] == 6) * 6 + (cell.options[7] == 7) * 7 + (cell.options[8] == 8) * 8;
-            SetupCellToValue(k, static_cast<char>(valueToSet));
+            SetupCellToValue(k, cell.Option());
          }
          else
          {
@@ -130,12 +166,11 @@ struct SFIELD final
          const SCELL& cell = cells_[indexOfGuess];
          for (COUNTT i = 0; i < N_OPTIONS; ++i)
          {
-            const char vv = cell.options[i];
-            if (vv == NOTFOUND) continue;
+            if ((cell.options & optionBits[i]) == 0) continue;
 
             // create guess
             SFIELD guessField(*this);
-            guessField.SetupCellToValue(indexOfGuess, vv);
+            guessField.SetupCellToValue(indexOfGuess, static_cast<char>(i));
             if (guessField.Solve(result))
                return true;
          }

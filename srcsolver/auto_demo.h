@@ -1,14 +1,18 @@
 #pragma once
+
+#include "classes_to_test.h"
+
 #include <array>
 #include <tuple>
 #include <utility>
 #include <cstddef>
 #include <type_traits>
 
-namespace bs3
+namespace black_smith__
 {
 /// to change for compare against bs2
    using COUNTT = size_t;
+   using SELLTYPE = char;
 //   using COUNTT = int;
 
 
@@ -16,9 +20,9 @@ namespace bs3
 /// working with indexes only :
 ///   0,1,2,3,4,5,6,7,8 for '1','2','3','4','5','6','7','8','9'
 /// 
-constexpr const char NOTFOUND = ' ';
-constexpr const char N_OPTIONS = 9;
-constexpr const char N_CELLS = 81;
+constexpr const SELLTYPE NOTFOUND = ' ';
+constexpr const SELLTYPE N_OPTIONS = 9;
+constexpr const SELLTYPE N_CELLS = 81;
 
 
 consteval size_t NoOptionsValue()
@@ -31,25 +35,51 @@ consteval size_t NoOptionsValue()
 }
 
 //#pragma warning( disable : 4324)
-//struct __declspec(align(16)) SCELL final
+//struct alignas(std::hardware_destructive_interference_size) SCELL final
 struct SCELL final
 {
-   char value = NOTFOUND;
-   char options[N_OPTIONS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+   SELLTYPE value = NOTFOUND;
+   SELLTYPE options[N_OPTIONS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
 
-   /// set cell value to this character without any check
-   void inline SetCellTo(const char v) noexcept
+   template<typename T>
+   void SetCellTo(const T v)
    {
-      *( reinterpret_cast<decltype(NoOptionsValue())*>(options) ) = NoOptionsValue();
-      options[N_OPTIONS - 1] = NOTFOUND;
-      value = v;
+      if constexpr (sizeof(T) == 1)
+      {
+         *(reinterpret_cast<decltype(NoOptionsValue())*>(options)) = NoOptionsValue();
+         options[N_OPTIONS - 1] = NOTFOUND;
+      }
+      else
+      {
+         for (COUNTT i = 0; i < N_OPTIONS; ++i) options[i] = NOTFOUND;
+      }
       options[v] = v;
+      value = v;
    }
 
+   /// returns amount of possible options
+   COUNTT inline OptionsAmount() const
+   {
+      COUNTT ret = 0;
+      for (COUNTT i = 0; i < N_OPTIONS; ++i) ret += (options[i] != NOTFOUND);
+//      for (const auto opt : options) ret += (opt != NOTFOUND); // !!! Demonstrate !!!
+      return ret;
+   }
+
+   // return single opened option Index or garbage
+   SELLTYPE inline Option() const
+   {
+      const COUNTT valueToSet = (options[1] == 1) * 1 + (options[2] == 2) * 2
+         + (options[3] == 3) * 3 + (options[4] == 4) * 4 + (options[5] == 5) * 5
+         + (options[6] == 6) * 6 + (options[7] == 7) * 7 + (options[8] == 8) * 8;
+
+      return static_cast<SELLTYPE>(valueToSet);
+   }
 }; // struct SCELL final
 //#pragma warning( default : 4324)
 
+//--------------------------------------
 struct SFIELD final
 {
    SCELL cells_[N_CELLS];
@@ -61,9 +91,9 @@ struct SFIELD final
       for (COUNTT i = 0; i < N_CELLS; ++i)
       {
          const char c = src[i];
-         if (const bool b = c >= '1' && c <= '9'; b)
+         if ((c >= '1') && (c <= '9'))
          {
-            SetupCellToValue(i, c - '1');
+            SetupCellToValue(i, static_cast<SELLTYPE>(c - '1'));
          }
       }
    }
@@ -72,29 +102,30 @@ struct SFIELD final
    /// increase amount_established
    /// no precalculation indexes but do calculation in place
    /// set specific cell to the value
-   void inline SetupCellToValue(const COUNTT index, const char v) noexcept
+   void inline SetupCellToValue(const COUNTT index, const SELLTYPE v) noexcept
    {
       const COUNTT row{index / N_OPTIONS};
       const COUNTT column{index % N_OPTIONS};
       const COUNTT square{(index / 27) * 3 + (column / 3)};
       const COUNTT basicIndexSquare = (square / 3) * 27 + (square % 3) * 3;
-      for(COUNTT k = 0; k < N_OPTIONS; ++k)
+      for (COUNTT k = 0; k < N_OPTIONS; ++k)
       {
          cells_[row * N_OPTIONS + k].options[v] = NOTFOUND; // row
          cells_[column + N_OPTIONS * k].options[v] = NOTFOUND; // column
          cells_[basicIndexSquare + N_OPTIONS * (k / 3) + (k % 3)].options[v] = NOTFOUND; // column
       }
 
-      ++amount_established;
       cells_[index].SetCellTo(v);
+      ++amount_established;
    }
+
 
 
    /// <summary>
    ///   return true in case it has been solved
    ///   returns false if it is impossible
    /// </summary>
-   bool Solve(char* result) noexcept
+   bool Solve(char* const result) noexcept
    {
       COUNTT indexOfGuess = N_CELLS;
 
@@ -104,20 +135,14 @@ struct SFIELD final
          if (NOTFOUND != cell.value)
             continue;
 
-         const COUNTT optionsAmount =
-            (cell.options[0] == 0) + (cell.options[1] == 1) + (cell.options[2] == 2) +
-            (cell.options[3] == 3) + (cell.options[4] == 4) + (cell.options[5] == 5) +
-            (cell.options[6] == 6) + (cell.options[7] == 7) + (cell.options[8] == 8);
+         const COUNTT optionsAmount = cell.OptionsAmount();
 
          /// no options and no value
          if (0 == optionsAmount) { return false; }
 
          if (1 == optionsAmount)
          {
-            const COUNTT valueToSet = (cell.options[1] == 1) * 1 + (cell.options[2] == 2) * 2
-               + (cell.options[3] == 3) * 3 + (cell.options[4] == 4) * 4 + (cell.options[5] == 5) * 5
-               + (cell.options[6] == 6) * 6 + (cell.options[7] == 7) * 7 + (cell.options[8] == 8) * 8;
-            SetupCellToValue(k, static_cast<char>(valueToSet));
+            SetupCellToValue(k, cell.Option());
          }
          else
          {
@@ -130,7 +155,7 @@ struct SFIELD final
          const SCELL& cell = cells_[indexOfGuess];
          for (COUNTT i = 0; i < N_OPTIONS; ++i)
          {
-            const char vv = cell.options[i];
+            const SELLTYPE vv = cell.options[i];
             if (vv == NOTFOUND) continue;
 
             // create guess
@@ -147,16 +172,17 @@ struct SFIELD final
       {
          for (COUNTT bigIndex = 0; bigIndex < N_CELLS; ++bigIndex)
          {
-            result[bigIndex] = '1' + cells_[bigIndex].value;
+            result[bigIndex] = '1' + static_cast<char>(cells_[bigIndex].value);
          }
       }
       return solved;
-   } // bool Solve(char* result) noexcept
+   } // bool Solve(SELLTYPE* result) noexcept
 
    /// return true if sudoku is ok to solve
    /// no concontradiction in the data
    bool Validate() noexcept
    {
+      // calculate summs for each row, column and square
       COUNTT summ[27] = {0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0};
 
       for (COUNTT k = 0; k < N_CELLS; ++k)
@@ -178,14 +204,40 @@ struct SFIELD final
    }
 };
 
-/// <summary>
-///   doing solve here
-/// </summary>
-bool SolveSudoku(const char* const src, char* result)
+
+/// -------------------------------------------------------
+
+
+struct SS
 {
-   SFIELD field(src);
 
-   return field.Solve(result);
-}
+};
 
-} // namespace bs2
+//--------------------------------------
+
+class MultithreadedAtomic final : public TestingLogic<MultithreadedAtomic, "Multithreaded with atomics">
+{
+protected:
+   unsigned int numCores = std::thread::hardware_concurrency();
+
+
+public:
+   void InitializationLogic()
+   {
+   }
+
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      SFIELD field(toSolve);
+
+      field.Solve(toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
+
+
+
+} // namespace black_smith__

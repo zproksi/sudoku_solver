@@ -5,7 +5,9 @@
 #include "bs_onethread.h"
 #include "bs2_onethread.h"
 #include "bs3_onethread.h"
+#include "bs4_onethread.h"
 #include "brute_force.h"
+#include "bs3_threads_atomics.h"
 
 
 /// <summary>
@@ -145,6 +147,24 @@ public:
    }
 };
 
+
+class BranchlessSolveLogic4 final : public TestingLogic<BranchlessSolveLogic4, "Logic Solution 4 - Bit Options">
+{
+public:
+   void InitializationLogic()
+   {
+   }
+
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      bs4::SolveSudoku(toSolve, toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
+
 /// -------------------------------------------------------
 
 /// <summary>
@@ -212,6 +232,22 @@ int main()
     }
     {
        BranchlessSolveLogic3 es;
+       es.Initialize();
+       es.HeatUpCall();
+       es.MeasuramentLogic();
+       es.Deinitialize();
+       std::cout << std::endl << std::endl << std::endl;
+    }
+    //{
+    //   BranchlessSolveLogic4 es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic();
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
+    {
+       black_smith__::MultithreadedAtomic es;
        es.Initialize();
        es.HeatUpCall();
        es.MeasuramentLogic();
