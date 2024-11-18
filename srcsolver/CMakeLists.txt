@@ -13,6 +13,10 @@ set(SOURCE_FILES
 set(HEADER_FILES
     brute_force.h
     bs_onethread.h
+    bs2_onethread.h
+    bs3_onethread.h
+    bs3_threads_atomics.h
+    bs4_onethread.h
     classes_to_test.h
     multithreaded_solve.h
     stdafx.h

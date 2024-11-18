@@ -10,7 +10,7 @@ namespace
    char to_hold_solutions[sudoku_test_data::nSudokuToSolve][sudoku_test_data::SUDOKU_DATA_LENGTH];
 };
 
-constexpr size_t RUNS_AMOUNT = 27;
+constexpr size_t RUNS_AMOUNT = 270;
 
 
 template<size_t N>
