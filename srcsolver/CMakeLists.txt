@@ -3,6 +3,7 @@ set(pname solver)
 
 # Source files
 set(SOURCE_FILES
+    report_generator.cpp
     solver.cpp
     stdafx.cpp
     sudoku_test_data.cpp
@@ -19,6 +20,7 @@ set(HEADER_FILES
     bs4_onethread.h
     classes_to_test.h
     multithreaded_solve.h
+    report_generator.h
     stdafx.h
     sudoku_test_data.h
     sv_guessescache.h

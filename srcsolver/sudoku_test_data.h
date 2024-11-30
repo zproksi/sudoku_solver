@@ -3,6 +3,9 @@
 namespace sudoku_test_data
 {
 constexpr size_t SUDOKU_DATA_LENGTH = 81;
+constexpr size_t RUNS_AMOUNT = 270;
+
+
 
 ///@brief how many sudoku to solve
 constexpr size_t nSudokuToSolve = 8;

@@ -4,14 +4,13 @@
 #include <string_view>
 #include "sudoku_test_data.h"
 #include "timemeasurer.h"
+#include "report_generator.h"
+
 
 namespace
 {
    char to_hold_solutions[sudoku_test_data::nSudokuToSolve][sudoku_test_data::SUDOKU_DATA_LENGTH];
 };
-
-constexpr size_t RUNS_AMOUNT = 270;
-
 
 template<size_t N>
 struct StringLiteral {
@@ -33,7 +32,7 @@ struct StringLiteral {
 template<typename T, StringLiteral TestName>
 struct TestingLogic
 {
-   void CoutDone()
+   static void CoutDone()
    {
       std::cout << "  --- done ---  " << "\n";
    };
@@ -68,7 +67,7 @@ struct TestingLogic
       }
    }
 
-   void MeasuramentLogic()
+   void MeasuramentLogic(sudoku_solver::Report_Generator& rg)
    {
       std::cout << "Measurement logic for:   -->   \"" << TestName.value << "\"   <---\n";
       std::cout << "Heat up call" << "\n";
@@ -80,12 +79,12 @@ struct TestingLogic
 
       T* const pT = static_cast<T*>(this);
       pT->HeatUpCall();
-      std::cout << "Solving sudoku " << RUNS_AMOUNT << " times\n";
+      std::cout << "Solving sudoku " << sudoku_test_data::RUNS_AMOUNT << " times\n";
       {
          long long nanosecondsForRun;
          {
             TimeMeasurer tmLocal("test run");
-            for (size_t repetition = 0; repetition < RUNS_AMOUNT; ++repetition)
+            for (size_t repetition = 0; repetition < sudoku_test_data::RUNS_AMOUNT; ++repetition)
             {
                for (size_t i = 0; i < sudoku_test_data::nSudokuToSolve; ++i)
                {
@@ -94,8 +93,10 @@ struct TestingLogic
             }
             nanosecondsForRun = tmLocal.NanosecondsElapsed(std::chrono::high_resolution_clock::now());
          }
-         std::cout << RUNS_AMOUNT << " took " << TimeMeasurer::FormatNanoseconds(nanosecondsForRun) << " nanoseconds\n";
-         std::cout << TimeMeasurer::FormatNanoseconds(nanosecondsForRun / RUNS_AMOUNT + 1) << " nanoseconds for " << sudoku_test_data::nSudokuToSolve << " sudoku in average\n\n";
+         std::cout << sudoku_test_data::RUNS_AMOUNT << " took " << TimeMeasurer::FormatNanoseconds(nanosecondsForRun) << " nanoseconds\n";
+         const long long rez = nanosecondsForRun / sudoku_test_data::RUNS_AMOUNT;
+         rg.LogEvent(TestName.value, rez);
+         std::cout << TimeMeasurer::FormatNanoseconds(rez + 1) << " nanoseconds for " << sudoku_test_data::nSudokuToSolve << " sudoku in average\n\n";
       }
       CoutDone();
    }
