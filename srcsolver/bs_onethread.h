@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace bs
+namespace blacksmith
 {
 
 /// working with indexes only :
@@ -556,4 +556,4 @@ bool SolveSudoku(const char* const src, char* result)
    return field.Solve(result);
 }
 
-} // namespac bs
+} // namespace blacksmith

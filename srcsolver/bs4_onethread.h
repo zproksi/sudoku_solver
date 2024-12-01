@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace bs4
+namespace bits_options
 {
 /// to change for compare against bs2
    using COUNTT = size_t;
@@ -223,4 +223,4 @@ bool SolveSudoku(const char* const src, char* result)
    return field.Solve(result);
 }
 
-} // namespace bs2
+} // namespace bits_options

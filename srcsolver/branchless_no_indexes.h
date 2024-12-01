@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace bs3
+namespace branchless_no_indexes
 {
 /// to change for compare against bs2
    using COUNTT = size_t;
@@ -188,4 +188,4 @@ bool SolveSudoku(const char* const src, char* result)
    return field.Solve(result);
 }
 
-} // namespace bs2
+} // namespace branchless_no_indexes
