@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "classes_to_test.h"
-#include "sv_guessescache.h"
 #include "no_separate_options_demo.h"
+#include "last_try_tomakefaster.h"
+#include "sv_guessescache.h"
 #include "sv_sfield.h"
 #include "bs_onethread.h"
 #include "bs2_onethread.h"
@@ -109,7 +110,7 @@ public:
 ///  Branchless Logic - no precalculated indexes.
 ///  some simplification
 /// </summary>
-/// 
+///
 class BranchlessSolveLogic3 final : public TestingLogic<BranchlessSolveLogic3, "Branchless Logic. Optimization. try 3. No precalculated indexes">
 {
 public:
@@ -125,6 +126,30 @@ public:
    void DeinitializationLogic()
    {
    }
+};
+
+
+/// -------------------------------------------------------
+/// <summary>
+///  Branchless Logic - no precalculated indexes.
+///  some simplification
+/// </summary>
+/// 
+class LastTry final : public TestingLogic<LastTry, "Last Try to make everything even faster. Code review + likely">
+{
+public:
+    void InitializationLogic()
+    {
+    }
+
+    void SolveSudoku(const char* const toSolve, char* toSetResult)
+    {
+        last_try_tomakefaster::SolveSudoku(toSolve, toSetResult);
+    }
+
+    void DeinitializationLogic()
+    {
+    }
 };
 
 /// -------------------------------------------------------
@@ -201,30 +226,30 @@ int main()
     std::cout << "I am Sudoku solver demo project!" << std::endl;
     std::cout << "I have " << sudoku_test_data::nSudokuToSolve << " sudoku to solve" << std::endl;
 
-    //{
-    //   SimpleSolveLogic es;
-    //   es.Initialize();
-    //   es.HeatUpCall();
-    //   es.MeasuramentLogic(report_gen);
-    //   es.Deinitialize();
-    //   std::cout << std::endl << std::endl << std::endl;
-    //}
-    //{
-    //   EnumerationSolveLogic es;
-    //   es.Initialize();
-    //   es.HeatUpCall();
-    //   es.MeasuramentLogic(report_gen);
-    //   es.Deinitialize();
-    //   std::cout << std::endl << std::endl << std::endl;
-    //}
-    //{
-    //    BranchlessSolveLogic es;
-    //    es.Initialize();
-    //    es.HeatUpCall();
-    //    es.MeasuramentLogic(report_gen);
-    //    es.Deinitialize();
-    //    std::cout << std::endl << std::endl << std::endl;
-    //}
+    {
+       SimpleSolveLogic es;
+       es.Initialize();
+       es.HeatUpCall();
+       es.MeasuramentLogic(report_gen);
+       es.Deinitialize();
+       std::cout << std::endl << std::endl << std::endl;
+    }
+    {
+       EnumerationSolveLogic es;
+       es.Initialize();
+       es.HeatUpCall();
+       es.MeasuramentLogic(report_gen);
+       es.Deinitialize();
+       std::cout << std::endl << std::endl << std::endl;
+    }
+    {
+        BranchlessSolveLogic es;
+        es.Initialize();
+        es.HeatUpCall();
+        es.MeasuramentLogic(report_gen);
+        es.Deinitialize();
+        std::cout << std::endl << std::endl << std::endl;
+    }
     {
        GuessAndBranchless es;
        es.Initialize();
@@ -232,6 +257,14 @@ int main()
        es.MeasuramentLogic(report_gen);
        es.Deinitialize();
        std::cout << std::endl << std::endl << std::endl;
+    }
+    {
+        LastTry es;
+        es.Initialize();
+        es.HeatUpCall();
+        es.MeasuramentLogic(report_gen);
+        es.Deinitialize();
+        std::cout << std::endl << std::endl << std::endl;
     }
     {
        BranchlessSolveLogic3 es;
@@ -249,21 +282,21 @@ int main()
         es.Deinitialize();
         std::cout << std::endl << std::endl << std::endl;
     }
-    //{
-    //   BitsForOptions es;
-    //   es.Initialize();
-    //   es.HeatUpCall();
-    //   es.MeasuramentLogic(report_gen);
-    //   es.Deinitialize();
-    //   std::cout << std::endl << std::endl << std::endl;
-    //}
-    //{
-    //   threads_atomics::MultithreadedAtomic es;
-    //   es.Initialize();
-    //   es.HeatUpCall();
-    //   es.MeasuramentLogic(report_gen);
-    //   es.Deinitialize();
-    //   std::cout << std::endl << std::endl << std::endl;
-    //}
+    {
+       BitsForOptions es;
+       es.Initialize();
+       es.HeatUpCall();
+       es.MeasuramentLogic(report_gen);
+       es.Deinitialize();
+       std::cout << std::endl << std::endl << std::endl;
+    }
+    {
+       threads_atomics::MultithreadedAtomic es;
+       es.Initialize();
+       es.HeatUpCall();
+       es.MeasuramentLogic(report_gen);
+       es.Deinitialize();
+       std::cout << std::endl << std::endl << std::endl;
+    }
     return EXIT_SUCCESS;
 }

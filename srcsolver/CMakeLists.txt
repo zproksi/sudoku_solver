@@ -21,8 +21,8 @@ set(HEADER_FILES
     bs4_onethread.h
     classes_to_test.h
     generated_indexes.h
+    last_try_tomakefaster.h
     multithreaded_solve.h
-#    no_separate_options.h
     report_generator.h
     stdafx.h
     sudoku_test_data.h
