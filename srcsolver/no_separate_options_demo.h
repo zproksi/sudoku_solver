@@ -21,22 +21,9 @@ constexpr const char N_OPTIONS = 9;
 constexpr const char N_CELLS = 81;
 
 
-//#pragma warning( disable : 4324)
-//struct __declspec(align(16)) SCELL final
-struct SCELL final
-{
-   char value = NOTFOUND;
-   void inline SetCellTo(const char v) noexcept
-   {
-      value = v;
-   }
-
-}; // struct SCELL final
-//#pragma warning( default : 4324)
-
 struct SFIELD final
 {
-   SCELL cells_[N_CELLS];
+   char cells_[N_CELLS];
    COUNTT amount_established = 0;
 
    // constructs field
@@ -45,9 +32,13 @@ struct SFIELD final
       for (COUNTT i = 0; i < N_CELLS; ++i)
       {
          const char c = src[i];
-         if (const bool b = c >= '1' && c <= '9'; b)
+         if (const bool b = c >= '1' && c <= '9'; b)[[unlikely]]
          {
             SetupCellToValue(i, c - '1');
+         }
+         else
+         {
+             cells_[i] = NOTFOUND;
          }
       }
    }
@@ -59,7 +50,7 @@ struct SFIELD final
    void inline SetupCellToValue(const COUNTT index, const char v) noexcept
    {
       ++amount_established;
-      cells_[index].SetCellTo(v);
+      cells_[index] = v;
    }
 
 
@@ -75,19 +66,67 @@ struct SFIELD final
 
       for (COUNTT k = 0; k < N_CELLS; ++k)
       {
-         const SCELL& cell = cells_[k];
-         if (NOTFOUND != cell.value)
+         if (NOTFOUND != cells_[k])
             continue;
 
          char options[N_OPTIONS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-         for (auto ind : gindexes::indexes_for_remove_option[k])
+         if (1)
          {
-             const char vv = cells_[ind].value;
-             if (const bool present = vv != NOTFOUND; present)
+             if (0)
              {
-                 options[vv] = NOTFOUND;
+                 for (auto ind : gindexes::indexes_for_remove_option[k])
+                 {
+                     const char vv = cells_[ind];
+                     if (vv != NOTFOUND)
+                     {
+                         options[vv] = NOTFOUND;
+                     }
+                 }
+             }
+             else
+             {  // fastest
+                 for (auto ind = 0; ind < gindexes::indexes_for_remove_option[k].size(); ++ind)
+                 {
+                     const char vv = cells_[gindexes::indexes_for_remove_option[k][ind]];
+                     if (vv != NOTFOUND)
+                     {
+                         options[vv] = NOTFOUND;
+                     }
+                 }
              }
          }
+         else
+         {
+             const COUNTT row{k / N_OPTIONS};
+             const COUNTT column{k % N_OPTIONS};
+             const COUNTT square{(k / 27) * 3 + (column / 3)};
+             const COUNTT basic_in_sq = 27 * (square / 3) + (square % 3) * 3; // left top cell in square
+             for (COUNTT ind = 0; ind < N_OPTIONS; ++ind)
+             {
+                 {
+                    const char vv = cells_[N_OPTIONS * row + ind];
+                    if (vv != NOTFOUND)
+                    {
+                        options[vv] = NOTFOUND;
+                    }
+                 }
+                 {
+                     const char vv = cells_[N_OPTIONS * ind + column];
+                     if (vv != NOTFOUND)
+                     {
+                         options[vv] = NOTFOUND;
+                     }
+                 }
+                 {
+                     const char vv = cells_[basic_in_sq + N_OPTIONS * (ind / 3) + (ind % 3)];
+                     if (vv != NOTFOUND)
+                     {
+                         options[vv] = NOTFOUND;
+                     }
+                 }
+             }
+         }
+
 
          const COUNTT optionsAmount =
             (options[0] == 0) + (options[1] == 1) + (options[2] == 2) +
@@ -132,7 +171,7 @@ struct SFIELD final
       {
          for (COUNTT bigIndex = 0; bigIndex < N_CELLS; ++bigIndex)
          {
-            result[bigIndex] = '1' + cells_[bigIndex].value;
+            result[bigIndex] = '1' + cells_[bigIndex];
          }
       }
       return solved;
@@ -149,7 +188,7 @@ struct SFIELD final
          const COUNTT row{k / N_OPTIONS};
          const COUNTT column{k % N_OPTIONS};
          const COUNTT square{(k / 27) * 3 + (column / 3)};
-         const COUNTT x = cells_[k].value;
+         const COUNTT x = cells_[k];
          summ[row] += x;
          summ[N_OPTIONS + column] += x;
          summ[N_OPTIONS * 2 + square] += x;

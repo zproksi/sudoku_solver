@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "classes_to_test.h"
 #include "sv_guessescache.h"
-#include "no_separate_options.h"
+#include "no_separate_options_demo.h"
 #include "sv_sfield.h"
 #include "bs_onethread.h"
 #include "bs2_onethread.h"
