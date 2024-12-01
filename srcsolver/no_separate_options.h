@@ -4,12 +4,11 @@
 #include <utility>
 #include <cstddef>
 #include <type_traits>
+#include "generated_indexes.h"
 
-namespace bits_options
+namespace no_separate_options
 {
-/// to change for compare against bs2
    using COUNTT = size_t;
-   using OTYPE = int16_t; // options type
 //   using COUNTT = int;
 
 
@@ -22,71 +21,14 @@ constexpr const char N_OPTIONS = 9;
 constexpr const char N_CELLS = 81;
 
 
-consteval size_t NoOptionsValue()
-{
-   decltype(NoOptionsValue()) result = 0;
-   for (decltype(result) i = 0; i < sizeof(result); ++i) {
-      result = (result << 8) | NOTFOUND;
-   }
-   return result;
-}
-
-struct GenerateBitOptions
-{
-   static constexpr OTYPE firstBit = 0x01;
-   static constexpr std::array<OTYPE, N_OPTIONS> generate()
-   {
-      std::array<OTYPE, N_OPTIONS> result{};
-      std::size_t result_index = 0;
-      for (std::size_t i = 0; i < N_OPTIONS; ++i)
-      {
-         result[result_index++] = firstBit << i;
-      }
-      return result;
-   }
-};
-
-constexpr const OTYPE INITIAL_STATE = 0x01FF;
-constexpr const std::array<OTYPE, N_OPTIONS> optionBits = GenerateBitOptions::generate();
-
 //#pragma warning( disable : 4324)
 //struct __declspec(align(16)) SCELL final
 struct SCELL final
 {
    char value = NOTFOUND;
-   OTYPE options = INITIAL_STATE;
-
-
-   /// set cell value to this character without any check
    void inline SetCellTo(const char v) noexcept
    {
-      options = optionBits[v];
       value = v;
-   }
-
-   COUNTT inline OptionsAmount() const noexcept
-   {
-      COUNTT ret = 0;
-      for (auto o : optionBits)
-      {
-         ret += ((o & options) != 0);
-      }
-      return ret;
-   }
-
-   char inline Option() const noexcept
-   {
-      for (char ret = '\0'; ret < N_OPTIONS; ++ret)
-      {
-         if ((optionBits[ret] & options) != 0)
-            return ret;
-      }
-      return '\0';
-   }
-
-   void inline ClearOption(const COUNTT n) noexcept
-   {
-      options &= ~(optionBits[n]);
    }
 
 }; // struct SCELL final
@@ -116,17 +58,6 @@ struct SFIELD final
    /// set specific cell to the value
    void inline SetupCellToValue(const COUNTT index, const char v) noexcept
    {
-      const COUNTT row{index / N_OPTIONS};
-      const COUNTT column{index % N_OPTIONS};
-      const COUNTT square{(index / 27) * 3 + (column / 3)};
-      const COUNTT basicIndexSquare = (square / 3) * 27 + (square % 3) * 3;
-      for(COUNTT k = 0; k < N_OPTIONS; ++k)
-      {
-         cells_[row * N_OPTIONS + k].ClearOption(v); // row
-         cells_[column + N_OPTIONS * k].ClearOption(v); // column
-         cells_[basicIndexSquare + N_OPTIONS * (k / 3) + (k % 3)].ClearOption(v); // column
-      }
-
       ++amount_established;
       cells_[index].SetCellTo(v);
    }
@@ -140,37 +71,56 @@ struct SFIELD final
    {
       COUNTT indexOfGuess = N_CELLS;
 
+      char optionsX[N_OPTIONS];
+
       for (COUNTT k = 0; k < N_CELLS; ++k)
       {
          const SCELL& cell = cells_[k];
          if (NOTFOUND != cell.value)
             continue;
 
-         const COUNTT optionsAmount = cell.OptionsAmount();
+         char options[N_OPTIONS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+         for (auto ind : gindexes::indexes_for_remove_option[k])
+         {
+             const char vv = cells_[ind].value;
+             if (const bool present = vv != NOTFOUND; present)
+             {
+                 options[vv] = NOTFOUND;
+             }
+         }
+
+         const COUNTT optionsAmount =
+            (options[0] == 0) + (options[1] == 1) + (options[2] == 2) +
+            (options[3] == 3) + (options[4] == 4) + (options[5] == 5) +
+            (options[6] == 6) + (options[7] == 7) + (options[8] == 8);
 
          /// no options and no value
          if (0 == optionsAmount) { return false; }
 
          if (1 == optionsAmount)
          {
-            SetupCellToValue(k, cell.Option());
+            const COUNTT valueToSet = (options[1] == 1) * 1 + (options[2] == 2) * 2
+               + (options[3] == 3) * 3 + (options[4] == 4) * 4 + (options[5] == 5) * 5
+               + (options[6] == 6) * 6 + (options[7] == 7) * 7 + (options[8] == 8) * 8;
+            SetupCellToValue(k, static_cast<char>(valueToSet));
          }
          else
          {
+            memcpy(optionsX, options, sizeof(optionsX));
             indexOfGuess = k;
          }
       }
 
       if (amount_established < N_CELLS)
       {
-         const SCELL& cell = cells_[indexOfGuess];
          for (COUNTT i = 0; i < N_OPTIONS; ++i)
          {
-            if ((cell.options & optionBits[i]) == 0) continue;
+            const char vv = optionsX[i];
+            if (vv == NOTFOUND) continue;
 
             // create guess
             SFIELD guessField(*this);
-            guessField.SetupCellToValue(indexOfGuess, static_cast<char>(i));
+            guessField.SetupCellToValue(indexOfGuess, vv);
             if (guessField.Solve(result))
                return true;
          }
@@ -223,4 +173,4 @@ bool SolveSudoku(const char* const src, char* result)
    return field.Solve(result);
 }
 
-} // namespace bits_options
+} // namespace no_separate_options

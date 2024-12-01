@@ -3,6 +3,7 @@ set(pname solver)
 
 # Source files
 set(SOURCE_FILES
+    generated_indexes.cpp
     report_generator.cpp
     solver.cpp
     stdafx.cpp
@@ -12,14 +13,16 @@ set(SOURCE_FILES
     timemeasurer.cpp
 )
 set(HEADER_FILES
+    branchless_no_indexes.h
     brute_force.h
     bs_onethread.h
     bs2_onethread.h
-    bs3_onethread.h
     bs3_threads_atomics.h
     bs4_onethread.h
     classes_to_test.h
+    generated_indexes.h
     multithreaded_solve.h
+#    no_separate_options.h
     report_generator.h
     stdafx.h
     sudoku_test_data.h

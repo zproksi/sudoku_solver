@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace black_smith__
+namespace threads_atomics
 {
 /// to change for compare against bs2
    using COUNTT = size_t;
@@ -16,8 +16,6 @@ namespace black_smith__
    using ATOMIC_ST = int64_t;
 //   using COUNTT = int;
 
-
-   constexpr const decltype(std::thread::hardware_concurrency()) MAX_CORES_USAGE = 8;
 
 /// working with indexes only :
 ///   0,1,2,3,4,5,6,7,8 for '1','2','3','4','5','6','7','8','9'
@@ -308,8 +306,7 @@ struct SFIELD final
 
 
 //--------------------------------------
-
-class MultithreadedAtomic final : public TestingLogic<MultithreadedAtomic, "Multithreaded with atomics">
+class MultithreadedAtomic final : public TestingLogic<MultithreadedAtomic, "Multithreaded with atomics. 8 threads">
 {
 protected:
    decltype(std::thread::hardware_concurrency()) numCores = std::thread::hardware_concurrency();
@@ -318,12 +315,15 @@ protected:
 
 
 public:
+   MultithreadedAtomic(const decltype(std::thread::hardware_concurrency()) NCORES = 8)
+   {
+      if (numCores > NCORES) // agreement to do all in 8 threads
+      {
+         numCores = NCORES;
+      }
+   }
    void InitializationLogic()
    {
-      if (numCores > MAX_CORES_USAGE) // agreement to do all in 8 threads
-      {
-         numCores = MAX_CORES_USAGE;
-      }
       threadsData.reset(new ThreadRelated[numCores - 1]);
       retValues.reset(new std::future<void>[numCores - 1]);
       COUNTT screenRange = N_CELLS / numCores;
@@ -385,4 +385,4 @@ public:
 
 
 
-} // namespace black_smith__
+} // namespace threads_atomics

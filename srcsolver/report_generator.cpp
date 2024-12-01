@@ -47,7 +47,7 @@ Report_Generator::~Report_Generator()
 
       ofs << std::format(R"(</br>{} (It takes <B>{} ns</B> for {} sudoku)</br><B>{}</B> nanoseconds for 1 sudoku in average</br>
          <table border="1" width="100%">
-            <tr><td width="{}%" bgcolor=#{} /><td width="{}%" bgcolor="white">&nbsp</td></tr>
+            <tr><td width="{}%" bgcolor=#{}>&nbsp</td><td width="{}%" bgcolor="white"/></tr>
          </table></br>)", mr.description_, // description
                            TimeMeasurer::FormatNanoseconds(mr.usedTimeNanoseconds_), sudoku_test_data::nSudokuToSolve,
                            TimeMeasurer::FormatNanoseconds(mr.usedTimeNanoseconds_ / sudoku_test_data::nSudokuToSolve),

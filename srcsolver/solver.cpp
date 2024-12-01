@@ -1,45 +1,16 @@
 #include "stdafx.h"
 #include "classes_to_test.h"
 #include "sv_guessescache.h"
+#include "no_separate_options.h"
 #include "sv_sfield.h"
 #include "bs_onethread.h"
 #include "bs2_onethread.h"
-#include "bs3_onethread.h"
+#include "branchless_no_indexes.h"
 #include "bs4_onethread.h"
 #include "brute_force.h"
 #include "bs3_threads_atomics.h"
 #include "report_generator.h"
 
-
-/// <summary>
-///  Testing option - doing nothing - just copy solution from solved solutions
-/// </summary>
-
-class TestingLogicNothing final : public TestingLogic<TestingLogicNothing, "no work in scope">
-{
-public:
-   void InitializationLogic()
-   {
-   }
-
-   void SolveSudoku(const char* const toSolve, char* toSetResult)
-   {
-      using namespace sudoku_test_data;
-      for (size_t i = 0; i < nSudokuToSolve; ++i)
-      {
-         if (0 == memcmp(SudokuToSolve(i), toSolve, SUDOKU_DATA_LENGTH))
-         {
-            memcpy(toSetResult, SudokuSolution(i), SUDOKU_DATA_LENGTH);
-            return;
-         }
-      }
-   }
-
-   void DeinitializationLogic()
-   {
-   }
-};
-/// -------------------------------------------------------
 
 
 /// <summary>
@@ -47,7 +18,7 @@ public:
 /// </summary>
 /// 
 
-class SimpleSolveLogic final : public TestingLogic<SimpleSolveLogic, "Very first, Simple Solution">
+class SimpleSolveLogic final : public TestingLogic<SimpleSolveLogic, "Very first, Simple Solution. No tries to optimize">
 {
    std::unique_ptr<sv::GuessesCache> cache;
 public:
@@ -88,14 +59,11 @@ public:
 
 
 /// -------------------------------------------------------
-
-
 /// <summary>
 ///  Branchless Logic - speed optimisations
 /// </summary>
 /// 
-
-class BranchlessSolveLogic final : public TestingLogic<BranchlessSolveLogic, "Branchless Logic Solution">
+class BranchlessSolveLogic final : public TestingLogic<BranchlessSolveLogic, "Branchless Logic Solution. Is it faster for this case?">
 {
 public:
    void InitializationLogic()
@@ -104,7 +72,7 @@ public:
 
    void SolveSudoku(const char* const toSolve, char* toSetResult)
    {
-      bs::SolveSudoku(toSolve, toSetResult);
+      blacksmith::SolveSudoku(toSolve, toSetResult);
    }
 
    void DeinitializationLogic()
@@ -113,7 +81,13 @@ public:
 };
 
 
-class BranchlessSolveLogic2 final : public TestingLogic<BranchlessSolveLogic2, "Branchless Logic Solution 2">
+/// -------------------------------------------------------
+/// <summary>
+///  Branchless Logic - go for all 81. and if it is still not solved do the guess at once.
+///  even if we get any value set during this iteration
+/// </summary>
+/// 
+class GuessAndBranchless final : public TestingLogic<GuessAndBranchless, "Branchless Logic + Guess Solution. 1 full run for 81 and guess at once. One more iteration of Optimization.">
 {
 public:
    void InitializationLogic()
@@ -122,43 +96,7 @@ public:
 
    void SolveSudoku(const char* const toSolve, char* toSetResult)
    {
-      bs2::SolveSudoku(toSolve, toSetResult);
-   }
-
-   void DeinitializationLogic()
-   {
-   }
-};
-
-
-class BranchlessSolveLogic3 final : public TestingLogic<BranchlessSolveLogic3, "Branchless Logic Solution 3">
-{
-public:
-   void InitializationLogic()
-   {
-   }
-
-   void SolveSudoku(const char* const toSolve, char* toSetResult)
-   {
-      bs3::SolveSudoku(toSolve, toSetResult);
-   }
-
-   void DeinitializationLogic()
-   {
-   }
-};
-
-
-class BranchlessSolveLogic4 final : public TestingLogic<BranchlessSolveLogic4, "Logic Solution 4 - Bit Options">
-{
-public:
-   void InitializationLogic()
-   {
-   }
-
-   void SolveSudoku(const char* const toSolve, char* toSetResult)
-   {
-      bs4::SolveSudoku(toSolve, toSetResult);
+      guess_is_in_the_main_loop::SolveSudoku(toSolve, toSetResult);
    }
 
    void DeinitializationLogic()
@@ -167,13 +105,57 @@ public:
 };
 
 /// -------------------------------------------------------
+/// <summary>
+///  Branchless Logic - no precalculated indexes.
+///  some simplification
+/// </summary>
+/// 
+class BranchlessSolveLogic3 final : public TestingLogic<BranchlessSolveLogic3, "Branchless Logic. Optimization. try 3. No precalculated indexes">
+{
+public:
+   void InitializationLogic()
+   {
+   }
 
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      branchless_no_indexes::SolveSudoku(toSolve, toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
+
+/// -------------------------------------------------------
+/// <summary>
+///  Branchless Logic - no precalculated indexes.
+///  Bits for options have been used
+/// </summary>
+/// 
+class BitsForOptions final : public TestingLogic<BitsForOptions, "Optimization. try 4 - Bit for Options">
+{
+public:
+   void InitializationLogic()
+   {
+   }
+
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      bits_options::SolveSudoku(toSolve, toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
+
+/// -------------------------------------------------------
 /// <summary>
 ///  Brute force logic. Simple Enumeration
 /// </summary>
 /// 
-
-class EnumerationSolveLogic final : public TestingLogic<EnumerationSolveLogic, "Brute force logic. Enumeration">
+class EnumerationSolveLogic final : public TestingLogic<EnumerationSolveLogic, "Brute force logic. Enumeration. Ported from python code by chat GPT">
 {
 public:
    void InitializationLogic()
@@ -189,10 +171,29 @@ public:
    {
    }
 };
+/// -------------------------------------------------------
+/// <summary>
+///  Brute force logic. Simple Enumeration
+/// </summary>
+/// 
+class NoOptionsButCalculations final : public TestingLogic<NoOptionsButCalculations, "Do Search of possible options during run. calculated Indexes">
+{
+public:
+   void InitializationLogic()
+   {
+   }
 
+   void SolveSudoku(const char* const toSolve, char* toSetResult)
+   {
+      no_separate_options::SolveSudoku(toSolve, toSetResult);
+   }
+
+   void DeinitializationLogic()
+   {
+   }
+};
 
 /// -------------------------------------------------------
-
 //int main(int argc, char* argv[])
 int main()
 {
@@ -200,32 +201,32 @@ int main()
     std::cout << "I am Sudoku solver demo project!" << std::endl;
     std::cout << "I have " << sudoku_test_data::nSudokuToSolve << " sudoku to solve" << std::endl;
 
+    //{
+    //   SimpleSolveLogic es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic(report_gen);
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
+    //{
+    //   EnumerationSolveLogic es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic(report_gen);
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
+    //{
+    //    BranchlessSolveLogic es;
+    //    es.Initialize();
+    //    es.HeatUpCall();
+    //    es.MeasuramentLogic(report_gen);
+    //    es.Deinitialize();
+    //    std::cout << std::endl << std::endl << std::endl;
+    //}
     {
-       TestingLogicNothing es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic(report_gen);
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
-    {
-       SimpleSolveLogic es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic(report_gen);
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
-    {
-       BranchlessSolveLogic es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic(report_gen);
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
-    {
-       BranchlessSolveLogic2 es;
+       GuessAndBranchless es;
        es.Initialize();
        es.HeatUpCall();
        es.MeasuramentLogic(report_gen);
@@ -241,28 +242,28 @@ int main()
        std::cout << std::endl << std::endl << std::endl;
     }
     {
-       BranchlessSolveLogic4 es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic(report_gen);
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
+        NoOptionsButCalculations es;
+        es.Initialize();
+        es.HeatUpCall();
+        es.MeasuramentLogic(report_gen);
+        es.Deinitialize();
+        std::cout << std::endl << std::endl << std::endl;
     }
-    {
-       black_smith__::MultithreadedAtomic es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic(report_gen);
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
-    {
-       EnumerationSolveLogic es;
-       es.Initialize();
-       es.HeatUpCall();
-       es.MeasuramentLogic(report_gen);
-       es.Deinitialize();
-       std::cout << std::endl << std::endl << std::endl;
-    }
+    //{
+    //   BitsForOptions es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic(report_gen);
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
+    //{
+    //   threads_atomics::MultithreadedAtomic es;
+    //   es.Initialize();
+    //   es.HeatUpCall();
+    //   es.MeasuramentLogic(report_gen);
+    //   es.Deinitialize();
+    //   std::cout << std::endl << std::endl << std::endl;
+    //}
     return EXIT_SUCCESS;
 }
