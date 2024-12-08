@@ -22,6 +22,7 @@
 
 mailto: **Zaytsev.Lesha@gmail.com**
 
+Donate: USDT, Tron, **TRdqGQCDQHseWthH1LsUgarv54zN6FyjJ2**
 ![Donate:USDT:Tron](./usdt_tron_donate.jpg)
 ## Copyright
 
