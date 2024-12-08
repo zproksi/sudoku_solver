@@ -41,9 +41,11 @@ Report_Generator::~Report_Generator()
       if (percentage > 100)
          percentage = 100;
       const long long reminder = 100 - percentage;
-      char colorArr[7] = {'0', '0', '6', '0', '0', '9', '\0'};
-      colorArr[0] += static_cast<char>(reminder / 10);
+      char colorArr[7] = {'9', '0', '0', '0', '0', '9', '\0'};
+      colorArr[0] -= static_cast<char>(reminder / 10);
       colorArr[1] = colorArr[0];
+      colorArr[2] += static_cast<char>(reminder / 10);
+      colorArr[3] = colorArr[0];
 
       ofs << std::format(R"(</br>{} (It takes <B>{} ns</B> for {} sudoku)</br><B>{}</B> nanoseconds for 1 sudoku in average</br>
          <table border="1" width="100%">

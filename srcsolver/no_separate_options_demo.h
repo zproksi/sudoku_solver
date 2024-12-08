@@ -74,23 +74,23 @@ struct SFIELD final
          {
              if (0)
              {
-                 for (auto ind : gindexes::indexes_for_remove_option[k])
+                 for (size_t ind : gindexes::indexes_for_remove_option[k])
                  {
                      const char vv = cells_[ind];
                      if (vv != NOTFOUND)
                      {
-                         options[vv] = NOTFOUND;
+                         options[static_cast<int>(vv)] = NOTFOUND;
                      }
                  }
              }
              else
              {  // fastest
-                 for (auto ind = 0; ind < gindexes::indexes_for_remove_option[k].size(); ++ind)
+                 for (size_t ind = 0; ind < gindexes::indexes_for_remove_option[k].size(); ++ind)
                  {
                      const char vv = cells_[gindexes::indexes_for_remove_option[k][ind]];
                      if (vv != NOTFOUND)
                      {
-                         options[vv] = NOTFOUND;
+                         options[static_cast<int>(vv)] = NOTFOUND;
                      }
                  }
              }
@@ -107,21 +107,21 @@ struct SFIELD final
                     const char vv = cells_[N_OPTIONS * row + ind];
                     if (vv != NOTFOUND)
                     {
-                        options[vv] = NOTFOUND;
+                        options[static_cast<int>(vv)] = NOTFOUND;
                     }
                  }
                  {
                      const char vv = cells_[N_OPTIONS * ind + column];
                      if (vv != NOTFOUND)
                      {
-                         options[vv] = NOTFOUND;
+                         options[static_cast<int>(vv)] = NOTFOUND;
                      }
                  }
                  {
                      const char vv = cells_[basic_in_sq + N_OPTIONS * (ind / 3) + (ind % 3)];
                      if (vv != NOTFOUND)
                      {
-                         options[vv] = NOTFOUND;
+                         options[static_cast<int>(vv)] = NOTFOUND;
                      }
                  }
              }

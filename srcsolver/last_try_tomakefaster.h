@@ -44,7 +44,7 @@ struct SCELL final
       *( reinterpret_cast<decltype(NoOptionsValue())*>(options) ) = NoOptionsValue();
       options[N_OPTIONS - 1] = NOTFOUND;
       value = v;
-      options[v] = v;
+      options[static_cast<int>(v)] = v;
    }
 
 }; // struct SCELL final
@@ -80,9 +80,9 @@ struct SFIELD final
       const COUNTT basicIndexSquare = (square / 3) * 27 + (square % 3) * 3;
       for(COUNTT k = 0; k < N_OPTIONS; ++k)
       {
-         cells_[row * N_OPTIONS + k].options[v] = NOTFOUND; // row
-         cells_[column + N_OPTIONS * k].options[v] = NOTFOUND; // column
-         cells_[basicIndexSquare + N_OPTIONS * (k / 3) + (k % 3)].options[v] = NOTFOUND; // column
+         cells_[row * N_OPTIONS + k].options[static_cast<int>(v)] = NOTFOUND; // row
+         cells_[column + N_OPTIONS * k].options[static_cast<int>(v)] = NOTFOUND; // column
+         cells_[basicIndexSquare + N_OPTIONS * (k / 3) + (k % 3)].options[static_cast<int>(v)] = NOTFOUND; // column
       }
 
       ++amount_established;
@@ -170,7 +170,7 @@ struct SFIELD final
          summ[N_OPTIONS * 2 + square] += x;
       }
       COUNTT valid = 1; //CHANGE 1
-      for (COUNTT j = 0; (j < sizeof(summ)/sizeof(*summ)) * valid; ++j)
+      for (COUNTT j = 0; static_cast<COUNTT>(j < sizeof(summ)/sizeof(*summ)) * valid; ++j)
       {
          valid *= (summ[j] == 36);
       }

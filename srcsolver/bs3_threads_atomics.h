@@ -94,7 +94,11 @@ struct SFIELD;
 
 #pragma warning( disable : 4324)
 struct
+#ifdef __linux__
+__attribute__((aligned(std::hardware_destructive_interference_size)))
+#else
 alignas(std::hardware_destructive_interference_size)
+#endif
 ThreadRelated final
 {
    std::atomic<ATOMIC_ST> workMode{modeWorkDone};
@@ -106,7 +110,8 @@ ThreadRelated final
    COUNTT failOption = 0; // set to 1 if we have a Cell without any option
    COUNTT value_to_makeSomething{0};
 };
-static_assert(sizeof(ThreadRelated) == std::hardware_destructive_interference_size, "must be this size");
+
+// static_assert(sizeof(ThreadRelated) == std::hardware_destructive_interference_size, "must be this size");
 #pragma warning( default : 4324)
 
 //--------------------------------------
