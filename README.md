@@ -22,6 +22,7 @@
 
 mailto: **Zaytsev.Lesha@gmail.com**
 
+![Donate:USDT:Tron](./usdt_tron_donate.jpg)
 ## Copyright
 
 [MIT License](https://opensource.org/license/mit/) Copyright <2024> [Alexey Zaytsev](https://www.linkedin.com/in/zaytsevalexey/)
