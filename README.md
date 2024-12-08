@@ -1,58 +1,36 @@
 # `sudoku_solver`
 
-**PURPOSE:** Demonstrates different approaches to the same task - "sudoku solution" in learning purpuses
-|Name|Description|
+**PURPOSE:** Demonstrates **profiling**/usage of atomics/**data generation during compilation**/CRTP on the same task - "sudoku solution"
+
+- generation of arrays during compilations: see [`generated_indexes.h`] and [`generated_indexes.cpp`]
+- CRTP: see [`classes_to_test.h`]
+- sample of **atomics** usage in multithreading: see [`bs3_threads_atomics.h`]
+- profiling for every approach included in CRTP: see [`report_generator.h`] and [`report_generator.cpp`]
+
+## Sequence with threads - atomics
+|Step Main Thread|Step other Thread|
 |:-|:-|
-|**Single thread**|Usual solution logic without specific speedup technics|
-|**Multithreaded**|Threads usage along with atomic types for synchronization; branchless programming|
-|**CUDA NVIDIA**|Graphics processing units usage - NVIDIA card required|
+|prepare all `struct ThreadRelated`. Set pointer to `struct SFIELD`||
+|switch `workMode` atomic to **modeDoWork** (for every thread)||
+||Wait `workMode` atomic becoming **modeDoWork**|
+|Do the work for own range of cells|Do the work for own range of cells|
+||switch `workMode` atomic to **modeWorkDone**|
+|wait for every thread `workMode` atomic become  **modeWorkDone**||
+|Repeat for the new *guess field*||
 
-**Table of Contents:**
-* [`sudoku_solver`](#sudoku_solver)
-  * [Description](#description)
-  * [Entry Point](#entry-point)
-  * [Building](#building)
-  * [Unit Tests](#unit-tests)
-  * [Architectural Diagrams](#architectural-diagrams)
-  * [Contacts](#contacts)
-  * [Copyright](#copyright)
-  * [Reference](#reference)
-## Description
-* Sudoke field should be presented as std::string_view with length of 81. So first 9 characters will present first line of sudoku field. next 9 characters will present second line, etc.
-* Every symbols '1','2','3','4','5','6','7','8','9' will be transfomwd inside the logic to the characters with code 0,1,2,3,4,5,6,7,8. All other characters will be transformed to the character defined as "NONE_CHARACTER"
-* Every type of logic should provide next function for usage:
+## Contact
 
-|Name|Description|
-|:-|:-|
-|SolveSudoku(std::string_view asudoku, class GuessesCache& acache)|function which solves sudoku|
-
-
-
-
-## Entry point
-
-## Building
-
-## Unit Tests
-
-## Architectural Diagrams
-
-# Contacts
-
-Feel free to use email zproksi@mail.ru along with the title:
-   1. bpatch bug found
-   1. bpatch improvement
-   1. bpatch change request
-   1. bpatch feature request
-   1. bpatch support request
-   1. bpatch collaboration proposal
+mailto: **Zaytsev.Lesha@gmail.com**
 
 ## Copyright
 
 [MIT License](https://opensource.org/license/mit/) Copyright <2024> [Alexey Zaytsev](https://www.linkedin.com/in/zaytsevalexey/)
 
-## Reference
 
-[`CMakeLists.txt`][cmakelists_txt]
 
-[cmakelists_txt]:./CMakeLists.txt
+[`generated_indexes.h`]:./srcsolver/generated_indexes.h
+[`generated_indexes.cpp`]:./srcsolver/generated_indexes.cpp
+[`classes_to_test.h`]:./srcsolver/classes_to_test.h
+[`bs3_threads_atomics.h`]:./srcsolver/bs3_threads_atomics.h
+[`report_generator.h`]:./srcsolver/report_generator.h
+[`report_generator.cpp`]:./srcsolver/report_generator.cpp
