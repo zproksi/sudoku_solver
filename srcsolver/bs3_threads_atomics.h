@@ -95,9 +95,9 @@ struct SFIELD;
 #pragma warning( disable : 4324)
 struct
 #ifdef __linux__
-__attribute__((aligned(std::hardware_destructive_interference_size)))
+__attribute__((aligned(std::hardware_constructive_interference_size)))
 #else
-alignas(std::hardware_destructive_interference_size)
+alignas(std::hardware_constructive_interference_size)
 #endif
 ThreadRelated final
 {
@@ -111,7 +111,7 @@ ThreadRelated final
    COUNTT value_to_makeSomething{0};
 };
 
-// static_assert(sizeof(ThreadRelated) == std::hardware_destructive_interference_size, "must be this size");
+static_assert(sizeof(ThreadRelated) == std::hardware_constructive_interference_size, "must be this size");
 #pragma warning( default : 4324)
 
 //--------------------------------------
