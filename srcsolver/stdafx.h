@@ -18,6 +18,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <new>
 #include <optional>
 #include <ranges>
 #include <regex>
